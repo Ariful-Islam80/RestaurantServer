@@ -70,9 +70,9 @@ async function run() {
     })
 
     // foodCart api
-
+    const cartCollection = client.db('BanglaRestaurant').collection('cart');
     app.get('/addCart', async (req, res) => {
-      const cursor = foodCollection.find()
+      const cursor = cartCollection.find()
       const result = await cursor.toArray()
       res.send(result)
 
@@ -81,7 +81,7 @@ async function run() {
     app.post('/addCart', async (req, res) => {
       const data = req.body;
       console.log(data);
-      const result = await foodCollection.insertOne(data)
+      const result = await cartCollection.insertOne(data)
       res.send(result)
     })
 
@@ -89,8 +89,17 @@ async function run() {
     app.delete('/addCart/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
-      const result = await foodCollection.deleteOne(query);
+      const result = await cartCollection.deleteOne(query);
       res.send(result)
+    })
+
+    const AddFoodsCollection = client.db('BanglaRestaurant').collection('addFoods');
+    app.post('/newFoods', async (req, res) => {
+      const newCard = req.body;
+      console.log(newCard);
+      const result = await AddFoodsCollection.insertOne(newCard);
+      res.send(result)
+      // console.log(result);
     })
 
 
