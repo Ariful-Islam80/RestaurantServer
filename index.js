@@ -117,7 +117,7 @@ async function run() {
       console.log(newCard);
       const result = await AddFoodsCollection.insertOne(newCard);
       res.send(result);
-      // console.log(result);
+      console.log(result);
     });
 
     // app.get('/newFoods', async (req, res) => {
