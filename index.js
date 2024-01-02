@@ -92,15 +92,23 @@ async function run() {
       const result = await cartCollection.deleteOne(query);
       res.send(result)
     })
-
-    const AddFoodsCollection = client.db('BanglaRestaurant').collection('addFoods');
-    app.post('/newFoods', async (req, res) => {
+// add foods api
+    const AddFoodsCollection = client.db('BanglaRestaurant').collection('foods');
+    app.post('/foods', async (req, res) => {
       const newCard = req.body;
       console.log(newCard);
       const result = await AddFoodsCollection.insertOne(newCard);
       res.send(result)
       // console.log(result);
     })
+    
+    // app.get('/newFoods', async (req, res) => {
+    //   const cursor = AddFoodsCollection.find()
+    //   const result = await cursor.toArray()
+    //   res.send(result)
+    // })
+
+    // 
 
 
     // auth related api
