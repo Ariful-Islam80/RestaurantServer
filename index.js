@@ -1,25 +1,21 @@
-const express = require('express');
-const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const cookieParser=require('cookie-parser')
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-require('dotenv').config()
+const express = require("express");
+const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-
-
 // middleware
-app.use(cors({
-  origin: [
-    'http://localhost:5173'
-  ],
-  credentials: true
-})
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
 );
-app.use(cookieParser())
+app.use(cookieParser());
 app.use(express.json());
-
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.rqj5bqq.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -29,7 +25,7 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 async function run() {
@@ -39,106 +35,130 @@ async function run() {
 
     // foods services and pagination
 
-    const foodCollection = client.db('BanglaRestaurant').collection('foods');
-    app.get('/foods', async (req, res) => {
+    const foodCollection = client.db("BanglaRestaurant").collection("foods");
+    app.get("/foods", async (req, res) => {
       const page = parseInt(req.query.page);
       const skip = parseInt(req.query.skip);
       // console.log(page, skip);
-      const result = await foodCollection.find()
+      const result = await foodCollection
+        .find()
         .skip(page * skip)
         .limit(skip)
         .toArray();
       // console.log(result);
       res.send(result);
-    })
+    });
     // for pagination products total count.
-    app.get('/foodsCount', async (req, res) => {
+    app.get("/foodsCount", async (req, res) => {
       const count = await foodCollection.estimatedDocumentCount();
-      res.send({ count })
-    })
+      res.send({ count });
+    });
 
     // specific data loaded and show
 
-    app.get('/foods/:id', async (req, res) => {
+    app.get("/foods/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const options = {
-        projection: { name: 1, img: 1, category: 1, price: 1, country: 1, description: 1 }
-      }
+        projection: {
+          name: 1,
+          img: 1,
+          category: 1,
+          price: 1,
+          country: 1,
+          description: 1,
+        },
+      };
       const result = await foodCollection.findOne(query, options);
-      res.send(result)
-    })
+      res.send(result);
+    });
+
+    // user foods
+    app.get("/userAddFoods", async (req, res) => {
+      const { email } = req.query;
+      console.log(email);
+      if (!email) {
+        return res.status(400).json({ error: "Email parameter is required" });
+      }
+
+      const result = await foodCollection.find({ userEmail: email }).toArray();
+      console.log(result);
+      res.send(result);
+    });
 
     // foodCart api
-    const cartCollection = client.db('BanglaRestaurant').collection('cart');
-    app.get('/addCart', async (req, res) => {
-      const cursor = cartCollection.find()
-      const result = await cursor.toArray()
-      res.send(result)
+    const cartCollection = client.db("BanglaRestaurant").collection("cart");
+    app.get("/addCart", async (req, res) => {
+      const cursor = cartCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
-    })
-
-    app.post('/addCart', async (req, res) => {
+    app.post("/addCart", async (req, res) => {
       const data = req.body;
       console.log(data);
-      const result = await cartCollection.insertOne(data)
-      res.send(result)
-    })
+      const result = await cartCollection.insertOne(data);
+      res.send(result);
+    });
 
     // my added cart delete
-    app.delete('/addCart/:id', async (req, res) => {
+    app.delete("/addCart/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) }
+      const query = { _id: new ObjectId(id) };
       const result = await cartCollection.deleteOne(query);
-      res.send(result)
-    })
-// add foods api
-    const AddFoodsCollection = client.db('BanglaRestaurant').collection('foods');
-    app.post('/foods', async (req, res) => {
+      res.send(result);
+    });
+    // add foods api
+    const AddFoodsCollection = client
+      .db("BanglaRestaurant")
+      .collection("foods");
+    app.post("/foods", async (req, res) => {
       const newCard = req.body;
       console.log(newCard);
       const result = await AddFoodsCollection.insertOne(newCard);
-      res.send(result)
+      res.send(result);
       // console.log(result);
-    })
-    
+    });
+
     // app.get('/newFoods', async (req, res) => {
     //   const cursor = AddFoodsCollection.find()
     //   const result = await cursor.toArray()
     //   res.send(result)
     // })
 
-    // 
-
+    //
 
     // auth related api
-    app.post('/jwt', async (req, res) => {
+    app.post("/jwt", async (req, res) => {
       const user = req.body;
-      console.log('user for token', user);
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+      // console.log("user for token", user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
 
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: false,
-        sameSite: 'none'
-        // httpOnly: true,
-        // secure: process.env.NODE_ENV === 'production',
-        // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-      })
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: false,
+          sameSite: "none",
+          // httpOnly: true,
+          // secure: process.env.NODE_ENV === 'production',
+          // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        })
         .send({ success: true });
-
-    })
+    });
     // cookie deleted api
-    app.post('/logOut', (req, res) => {
+    app.post("/logOut", (req, res) => {
       const user = req.body;
-      console.log('login out', user);
-      res.clearCookie('token', { maxAge: 0 }).send({ success: true })
-    })
-
+      console.log("login out", user);
+      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
@@ -146,11 +166,8 @@ async function run() {
 }
 run().catch(console.dir);
 
-
-
-
-app.get('/', (req, res) => {
-  res.send('Bangla RestaurantServer is Running')
+app.get("/", (req, res) => {
+  res.send("Bangla RestaurantServer is Running");
 });
 
 app.listen(port, () => {
