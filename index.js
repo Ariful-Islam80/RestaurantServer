@@ -93,7 +93,7 @@ async function run() {
       res.send(result)
     })
 // add foods api
-    const AddFoodsCollection = client.db('BanglaRestaurant').collection('foods');
+    const AddFoodsCollection = client.db('BanglaRestaurant').collection('foodsgit');
     app.post('/foods', async (req, res) => {
       const newCard = req.body;
       console.log(newCard);
