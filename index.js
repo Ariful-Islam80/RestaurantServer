@@ -39,13 +39,13 @@ async function run() {
     app.get("/foods", async (req, res) => {
       const page = parseInt(req.query.page);
       const skip = parseInt(req.query.skip);
-      // console.log(page, skip);
+
       const result = await foodCollection
         .find()
         .skip(page * skip)
         .limit(skip)
         .toArray();
-      // console.log(result);
+
       res.send(result);
     });
     // for pagination products total count.
@@ -76,7 +76,6 @@ async function run() {
     // user foods
     app.get("/userAddFoods", async (req, res) => {
       const { email } = req.query;
-      console.log(email);
       if (!email) {
         return res.status(400).json({ error: "Email parameter is required" });
       }
@@ -90,17 +89,16 @@ async function run() {
     const cartCollection = client.db("BanglaRestaurant").collection("cart");
     app.get("/addCart", async (req, res) => {
       const { email } = req.query;
-      console.log(email);
       if (!email) {
-        return res.send(400).json({ error: "Email Parameter is required" })
+        return res.send(400).json({ error: "Email Parameter is required" });
       }
       const result = await cartCollection.find({ userEmail: email }).toArray();
+      console.log(result);
       res.send(result);
     });
 
     app.post("/addCart", async (req, res) => {
       const data = req.body;
-      console.log(data);
       const result = await cartCollection.insertOne(data);
       res.send(result);
     });
@@ -118,24 +116,23 @@ async function run() {
       .collection("foods");
     app.post("/foods", async (req, res) => {
       const newCard = req.body;
-      console.log(newCard);
+
       const result = await AddFoodsCollection.insertOne(newCard);
       res.send(result);
-      // console.log(result);
     });
 
-    // app.get('/newFoods', async (req, res) => {
-    //   const cursor = AddFoodsCollection.find()
-    //   const result = await cursor.toArray()
-    //   res.send(result)
-    // })
+    app.get("/AddCart", async (req, res) => {
+      const cursor = AddFoodsCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     //
 
     // auth related api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-      // console.log("user for token", user);
+
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1h",
       });
