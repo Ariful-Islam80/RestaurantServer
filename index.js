@@ -110,6 +110,21 @@ async function run() {
       const result = await cartCollection.deleteOne(query);
       res.send(result);
     });
+
+    // update api
+    app.put('/updateFoods/:id', async (req, res) => {
+      const { id } = req.params;
+      const UpdatedFoods = req.body;
+      console.log(UpdatedFoods);
+
+      try {
+        const updateFoods = await foodCollection
+      } catch (error) {
+        console.error(error);
+      }
+    })
+
+
     // add foods api
     const AddFoodsCollection = client
       .db("BanglaRestaurant")
