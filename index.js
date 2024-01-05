@@ -112,18 +112,27 @@ async function run() {
     });
 
     // update api
-    app.put('/updateFoods/:id', async (req, res) => {
+    app.put("/updateFoods/:id", async (req, res) => {
       const { id } = req.params;
-      const UpdatedFoods = req.body;
-      console.log(UpdatedFoods);
-
+      const filter = { _id: new ObjectId(id) };
+      const option = { upsert: true };
+      const foods = req.body;
+    
+      const updatedFoods = {
+        $set: {
+          ...foods,
+        },
+      };
+   
       try {
-        const updateFoods = await foodCollection
+        const result = await foodCollection.updateOne(filter, updatedFoods, option);
+        res.send(result);
       } catch (error) {
         console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
       }
-    })
-
+    });
+    
 
     // add foods api
     const AddFoodsCollection = client
