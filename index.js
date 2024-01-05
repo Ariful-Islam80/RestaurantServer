@@ -89,8 +89,12 @@ async function run() {
     // foodCart api
     const cartCollection = client.db("BanglaRestaurant").collection("cart");
     app.get("/addCart", async (req, res) => {
-      const cursor = cartCollection.find();
-      const result = await cursor.toArray();
+      const { email } = req.query;
+      console.log(email);
+      if (!email) {
+        return res.send(400).json({ error: "Email Parameter is required" })
+      }
+      const result = await cartCollection.find({ userEmail: email }).toArray();
       res.send(result);
     });
 
@@ -111,13 +115,13 @@ async function run() {
     // add foods api
     const AddFoodsCollection = client
       .db("BanglaRestaurant")
-      .collection("foodsgit");
+      .collection("foods");
     app.post("/foods", async (req, res) => {
       const newCard = req.body;
       console.log(newCard);
       const result = await AddFoodsCollection.insertOne(newCard);
       res.send(result);
-      console.log(result);
+      // console.log(result);
     });
 
     // app.get('/newFoods', async (req, res) => {
