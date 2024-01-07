@@ -48,7 +48,7 @@ async function run() {
 
       res.send(result);
     });
-    // for pagination products total count.
+    // for pagination products total count:
     app.get("/foodsCount", async (req, res) => {
       const count = await foodCollection.estimatedDocumentCount();
       res.send({ count });
@@ -73,7 +73,7 @@ async function run() {
       res.send(result);
     });
 
-    // user foods
+    // user Add foods
     app.get("/userAddFoods", async (req, res) => {
       const { email } = req.query;
       if (!email) {
