@@ -99,6 +99,8 @@ async function run() {
 
     app.post("/addCart", async (req, res) => {
       const data = req.body;
+      console.log("cook cook",req.cookies);
+
       const result = await cartCollection.insertOne(data);
       res.send(result);
     });
