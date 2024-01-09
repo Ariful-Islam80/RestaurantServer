@@ -17,6 +17,18 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 
+// middlewares
+const logger = (req, res, next) => {
+  console.log("log info",req.method);
+  next()
+}
+
+const verifyToken = (req, res, next) => {
+  const token = req?.cookies?.token;
+  console.log('token in the middleware', token);
+  next()
+}
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.rqj5bqq.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -87,10 +99,12 @@ async function run() {
 
     // foodCart api
     const cartCollection = client.db("BanglaRestaurant").collection("cart");
-    app.get("/addCart", async (req, res) => {
+    app.get("/addCart",logger,verifyToken, async (req, res) => {
       const { email } = req.query;
+      // console.log("cook cook",req?.cookies);
+
       if (!email) {
-        return res.send(400).json({ error: "Email Parameter is required" });
+        return res.status(400).json({ error: "Email Parameter is required" });
       }
       const result = await cartCollection.find({ userEmail: email }).toArray();
       console.log(result);
@@ -99,7 +113,6 @@ async function run() {
 
     app.post("/addCart", async (req, res) => {
       const data = req.body;
-      console.log("cook cook",req.cookies);
 
       const result = await cartCollection.insertOne(data);
       res.send(result);
