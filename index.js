@@ -19,14 +19,25 @@ app.use(express.json());
 
 // middlewares
 const logger = (req, res, next) => {
-  console.log("log info",req.method);
+  console.log("log info", req.method);
   next()
 }
 
 const verifyToken = (req, res, next) => {
   const token = req?.cookies?.token;
   console.log('token in the middleware', token);
-  next()
+  // no token available
+  if (!token) {
+    return res.status(401).send({ message: "unauthorized access" })
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "unauthorized access" })
+    }
+    req.user = decoded;
+    next();
+
+  })
 }
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.rqj5bqq.mongodb.net/?retryWrites=true&w=majority`;
@@ -93,21 +104,20 @@ async function run() {
       }
 
       const result = await foodCollection.find({ userEmail: email }).toArray();
-      console.log(result);
+      // console.log(result);
       res.send(result);
     });
 
     // foodCart api
     const cartCollection = client.db("BanglaRestaurant").collection("cart");
-    app.get("/addCart",logger,verifyToken, async (req, res) => {
+    app.get("/addCart", logger, verifyToken, async (req, res) => {
       const { email } = req.query;
-      // console.log("cook cook",req?.cookies);
+      console.log("token owner info", req?.user);
 
       if (!email) {
         return res.status(400).json({ error: "Email Parameter is required" });
       }
       const result = await cartCollection.find({ userEmail: email }).toArray();
-      console.log(result);
       res.send(result);
     });
 
@@ -132,13 +142,13 @@ async function run() {
       const filter = { _id: new ObjectId(id) };
       const option = { upsert: true };
       const foods = req.body;
-    
+
       const updatedFoods = {
         $set: {
           ...foods,
         },
       };
-   
+
       try {
         const result = await foodCollection.updateOne(filter, updatedFoods, option);
         res.send(result);
@@ -147,7 +157,7 @@ async function run() {
         res.status(500).json({ error: 'Internal Server Error' });
       }
     });
-    
+
 
     // add foods api
     const AddFoodsCollection = client
@@ -160,7 +170,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/AddCart", async (req, res) => {
+    app.get("/addCart", async (req, res) => {
       const cursor = AddFoodsCollection.find();
       const result = await cursor.toArray();
       res.send(result);
@@ -178,12 +188,12 @@ async function run() {
 
       res
         .cookie("token", token, {
-          httpOnly: true,
-          secure: false,
-          sameSite: "none",
           // httpOnly: true,
-          // secure: process.env.NODE_ENV === 'production',
-          // sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          // secure: false,
+          // sameSite: "none",
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         })
         .send({ success: true });
     });
