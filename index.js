@@ -113,6 +113,9 @@ async function run() {
     app.get("/addCart", logger, verifyToken, async (req, res) => {
       const { email } = req.query;
       console.log("token owner info", req?.user);
+      if (req.user.email !== req.query.email) {
+        return res.status(403).send({message:"forbidden access"})
+      }
 
       if (!email) {
         return res.status(400).json({ error: "Email Parameter is required" });
@@ -183,7 +186,7 @@ async function run() {
       const user = req.body;
 
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "1h",
+        expiresIn: "1s",
       });
 
       res
