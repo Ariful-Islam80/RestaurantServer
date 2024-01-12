@@ -127,6 +127,7 @@ async function run() {
         return res.status(400).json({ error: "Email Parameter is required" });
       }
       const result = await cartCollection.find({ userEmail: email }).toArray();
+      console.log(result);
       res.send(result);
     });
 
