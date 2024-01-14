@@ -10,7 +10,7 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173","https://banglarestaurant-215d5.web.app"],
     credentials: true,
   })
 );
@@ -25,7 +25,6 @@ const logger = (req, res, next) => {
 
 const verifyToken = (req, res, next) => {
   const token = req?.cookies?.token;
-  console.log("token in the middleware", token);
   // no token available
   if (!token) {
     return res.status(401).send({ message: "unauthorized access" });
@@ -118,7 +117,6 @@ async function run() {
     const cartCollection = client.db("BanglaRestaurant").collection("cart");
     app.get("/addCart", logger, verifyToken, async (req, res) => {
       const { email } = req.query;
-      console.log("token owner info", req?.user);
       if (req.user.email !== req.query.email) {
         return res.status(403).send({ message: "forbidden access" });
       }
@@ -127,7 +125,6 @@ async function run() {
         return res.status(400).json({ error: "Email Parameter is required" });
       }
       const result = await cartCollection.find({ userEmail: email }).toArray();
-      console.log(result);
       res.send(result);
     });
 
@@ -213,7 +210,6 @@ async function run() {
     // cookie deleted api
     app.post("/logOut", (req, res) => {
       const user = req.body;
-      console.log("login out", user);
       res.clearCookie("token", { maxAge: 0 }).send({ success: true });
     });
 
